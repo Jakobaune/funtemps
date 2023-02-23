@@ -3,12 +3,18 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/Jakobaune/funtemps/conv"
 )
 
 // Definerer flag-variablene i hoved-"scope"
 var fahr float64
 var out string
 var funfacts string
+var celsius float64
+var kelvin float64
 
 // Bruker init (som anbefalt i dokumentasjonen) for å sikre at flagvariablene
 // er initialisert.
@@ -23,12 +29,38 @@ func init() {
 
 	// Definerer og initialiserer flagg-variablene
 	flag.Float64Var(&fahr, "F", 0.0, "temperatur i grader fahrenheit")
+	flag.Float64Var(&celsius, "C", 0.0, "temperatur i grader celsius")
+	flag.Float64Var(&kelvin, "K", 0.0, "temperatur i grader kelvin")
+
 	// Du må selv definere flag-variablene for "C" og "K"
+
 	flag.StringVar(&out, "out", "C", "beregne temperatur i C - celsius, F - farhenheit, K- Kelvin")
 	flag.StringVar(&funfacts, "funfacts", "sun", "\"fun-facts\" om sun - Solen, luna - Månen og terra - Jorden")
 	// Du må selv definere flag-variabelen for -t flagget, som bestemmer
 	// hvilken temperaturskala skal brukes når funfacts skal vises
 
+}
+func formatNumber(num float64) string {
+	formatted := strconv.FormatFloat(num, 'f', 2, 64)
+	formatted = strings.TrimRight(formatted, "0")
+	formatted = strings.TrimRight(formatted, ".")
+	formatted = strings.ReplaceAll(formatted, ",", "")
+
+	if (num > 1000) || (num < -1000) {
+		// Add commas as separators between large numbers
+		formatted = addCommas(formatted)
+		// Add a space between the number and the comma
+		formatted = strings.Replace(formatted, ",", " ", -1)
+	}
+	return formatted
+}
+
+func addCommas(str string) string {
+	n := len(str)
+	if n <= 3 {
+		return str
+	}
+	return addCommas(str[:n-3]) + "," + str[n-3:]
 }
 
 func main() {
@@ -59,18 +91,47 @@ func main() {
 	*/
 
 	// Her er noen eksempler du kan bruke i den manuelle testingen
-	fmt.Println(fahr, out, funfacts)
+	/* fmt.Println(fahr, out, funfacts)
 
 	fmt.Println("len(flag.Args())", len(flag.Args()))
 	fmt.Println("flag.NFlag()", flag.NFlag())
 
 	fmt.Println(isFlagPassed("out"))
+	*/
+
+	fmt.Println("Dette er første linje")
 
 	// Eksempel på enkel logikk
 	if out == "C" && isFlagPassed("F") {
 		// Kalle opp funksjonen FahrenheitToCelsius(fahr), som da
+		celsius = conv.FahrenheitToCelsius(fahr)
 		// skal returnere °C
-		fmt.Println("0°F er -17.78°C")
+		fmt.Println(fahr, "F er ", (formatNumber(celsius)), "C")
+	}
+
+	if out == "F" && isFlagPassed("C") {
+		fahr = conv.CelsiusToFahrenheit(celsius)
+		fmt.Println(celsius, "C er ", (formatNumber(fahr)), "F")
+	}
+
+	if out == "K" && isFlagPassed("C") {
+		kelvin = conv.CelsiusToKelvin(celsius)
+		fmt.Println(celsius, "C er ", (formatNumber(kelvin)), "K")
+	}
+
+	if out == "C" && isFlagPassed("K") {
+		celsius = conv.KelvinToCelsius(kelvin)
+		fmt.Println(kelvin, "K er ", (formatNumber(celsius)), "C")
+	}
+
+	if out == "K" && isFlagPassed("F") {
+		kelvin = conv.FahrenheitToKelvin(fahr)
+		fmt.Println(fahr, "F er ", (formatNumber(kelvin)), "K")
+	}
+
+	if out == "F" && isFlagPassed("K") {
+		fahr = conv.KelvinToFahrenheit(kelvin)
+		fmt.Println(kelvin, "K er ", (formatNumber(fahr)), "F")
 	}
 
 }
